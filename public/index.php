@@ -6,11 +6,10 @@ use app\core\Application;
 $app = new Application();
 
 
-$app->router->get('/', function (){
-    return "Hello World!";
-});
-$app->router->get('/contact', function (){
-    return "Hello World! This is contact page";
+$app->router->get('/', 'home');
+$app->router->get('/contact', "contact");
+$app->router->get('/about', function (){
+    \app\core\Template::view('views/home');
 });
 $app->run();
 

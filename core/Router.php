@@ -12,7 +12,7 @@ class Router
         $this->request = $request;
     }
 
-    public function get(string $path, \Closure $callback)
+    public function get(string $path,  $callback)
     {
 
         $this->routes['get'][$path] = $callback;
@@ -22,17 +22,18 @@ class Router
     {
         $path = $this->request->getPath();
 
-
         $method = $this->request->method();
 
         $callback = $this->routes[$method][$path] ?? false;
 
         if ($callback === false){
-            echo "ROUTE NOT FOUND";
-            exit;
+            return "ROUTE NOT FOUND";
+
         }
 
-        echo call_user_func($callback);
+
+        return call_user_func($callback);
 
     }
+
 }

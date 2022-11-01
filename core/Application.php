@@ -8,6 +8,8 @@ namespace app\core;
 class Application
 {
 
+    const PROJECT_DIR = __DIR__."/../";
+
     public Router $router;
 
     public Request $request;
@@ -21,7 +23,7 @@ class Application
 
     public function run()
     {
-        $this->router->resolve();
+        echo $this->router->resolve();
     }
 
 }
