@@ -1,0 +1,14 @@
+{
+    "name": "mastershifu/phpmvc-framework",
+    "autoload": {
+        "psr-4": {
+            "app\\": "./"
+        }
+    },
+    "authors": [
+        {
+            "name": "A H M Tareq"
+        }
+    ],
+    "require": {}
+}
