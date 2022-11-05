@@ -2,14 +2,18 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use app\core\Application;
+use app\core\Template;
 
 $app = new Application();
 
-
-$app->router->get('/', 'home');
-$app->router->get('/contact', "contact");
+$app->router->get('/', function (){
+    Template::view('home');
+});
+$app->router->get('/contact', function (){
+    Template::view('contact');
+});
 $app->router->get('/about', function (){
-    \app\core\Template::view('views/home');
+    Template::view('about');
 });
 $app->run();
 

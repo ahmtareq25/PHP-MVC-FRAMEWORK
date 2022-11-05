@@ -3,7 +3,7 @@
 namespace app\core;
 
 /**
- * resource https://dev.to/fadymr/create-your-own-php-template-engine-3m30
+ * resource https://codeshack.io/lightweight-template-engine-php/
  */
 
 class Template {
@@ -11,19 +11,22 @@ class Template {
     static $blocks = array();
     static $cache_path = Application::PROJECT_DIR.'runtime/cache/';
     static $cache_enabled = FALSE;
+    static $viewPath =  Application::PROJECT_DIR.'views/';
 
-    static function view($file, $data = array()) {
+    public static function view($file, $data = array()) {
+
         $cached_file = self::cache($file);
         extract($data, EXTR_SKIP);
         require $cached_file;
     }
 
-    static function cache($file) {
+    private static function cache($file) {
         if (!file_exists(self::$cache_path)) {
             mkdir(self::$cache_path, 0744);
         }
         $cached_file = self::$cache_path . str_replace(array('/', '.html'), array('_', ''), $file . '.php');
-        if (!self::$cache_enabled || !file_exists($cached_file) || filemtime($cached_file) < filemtime($file)) {
+
+        if (!self::$cache_enabled || !file_exists($cached_file) || filemtime($cached_file) < filemtime(self::getFullViewPath($file))) {
             $code = self::includeFiles($file);
             $code = self::compileCode($code);
             file_put_contents($cached_file, '<?php class_exists(\'' . __CLASS__ . '\') or exit; ?>' . PHP_EOL . $code);
@@ -47,10 +50,12 @@ class Template {
     }
 
     static function includeFiles($file) {
-        $file = Application::PROJECT_DIR.$file.'.php';
-        $code = file_get_contents($file);
+
+        $code = file_get_contents(self::getFullViewPath($file));
         preg_match_all('/{% ?(extends|include) ?\'?(.*?)\'? ?%}/i', $code, $matches, PREG_SET_ORDER);
+
         foreach ($matches as $value) {
+
             $code = str_replace($value[0], self::includeFiles($value[2]), $code);
         }
         $code = preg_replace('/{% ?(extends|include) ?\'?(.*?)\'? ?%}/i', '', $code);
@@ -70,8 +75,12 @@ class Template {
     }
 
     static function compileBlock($code) {
+
+
         preg_match_all('/{% ?block ?(.*?) ?%}(.*?){% ?endblock ?%}/is', $code, $matches, PREG_SET_ORDER);
+
         foreach ($matches as $value) {
+
             if (!array_key_exists($value[1], self::$blocks)) self::$blocks[$value[1]] = '';
             if (strpos($value[2], '@parent') === false) {
                 self::$blocks[$value[1]] = $value[2];
@@ -80,16 +89,54 @@ class Template {
             }
             $code = str_replace($value[0], '', $code);
         }
+
         return $code;
     }
 
     static function compileYield($code) {
-        foreach(self::$blocks as $block => $value) {
-            $code = preg_replace('/{% ?yield ?' . $block . ' ?%}/', $value, $code);
+
+        preg_match_all('/{% ?yield ?(.*?) ?%}/is',  $code, $yieldMatches, PREG_SET_ORDER);
+
+
+
+        foreach ($yieldMatches as $yieldMatch){
+
+            $defaultValueArray = explode('===', $yieldMatch[1]);
+
+
+            if (count($defaultValueArray) > 1){
+
+
+
+                if (isset(self::$blocks[trim($defaultValueArray[0])])){
+
+                    $code = preg_replace('/{% ?yield ?' . $yieldMatch[1] . ' ?%}/', self::$blocks[trim($defaultValueArray[0])], $code);
+                }else{
+
+                    $code = preg_replace('/{% ?yield ?' . $yieldMatch[1] . ' ?%}/', $defaultValueArray[1], $code);
+
+                }
+
+            }else{
+
+                if (isset(self::$blocks[$yieldMatch[1]])){
+
+                    $code = preg_replace('/{% ?yield ?' .  $yieldMatch[1] . ' ?%}/', self::$blocks[$yieldMatch[1]], $code);
+                }else{
+                    $code = preg_replace('/{% ?yield ?' .  $yieldMatch[1] . ' ?%}/', '', $code);
+                }
+            }
+
         }
-        $code = preg_replace('/{% ?yield ?(.*?) ?%}/i', '', $code);
+
+//        $code = preg_replace('/{% ?yield ?(.*?) ?%}/i', '', $code);
         return $code;
     }
+
+    private static function getFullViewPath($file){
+        return preg_replace('/(\/+)/','/',self::$viewPath.$file).'.php';;
+    }
+
 
 }
 ?>

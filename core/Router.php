@@ -6,12 +6,6 @@ class Router
 
     protected array $routes = [];
 
-    public Request $request;
-
-    public function __construct(Request $request){
-        $this->request = $request;
-    }
-
     public function get(string $path,  $callback)
     {
 
@@ -20,17 +14,17 @@ class Router
 
     public function resolve()
     {
-        $path = $this->request->getPath();
+        $path = app()->request->getPath();
 
-        $method = $this->request->method();
+        $method = app()->request->method();
 
         $callback = $this->routes[$method][$path] ?? false;
 
         if ($callback === false){
+            app()->response->setResponseCode(404);
             return "ROUTE NOT FOUND";
 
         }
-
 
         return call_user_func($callback);
 

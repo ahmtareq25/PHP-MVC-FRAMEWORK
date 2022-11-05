@@ -21,8 +21,12 @@ class Request
         
     }
 
-    public function isGetMethod(){
+    public function isMethodGet(){
         return $this->method() == 'get';
+    }
+
+    public function isMethodPost(){
+        return $this->method() == 'post';
     }
 
 

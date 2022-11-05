@@ -14,10 +14,16 @@ class Application
 
     public Request $request;
 
+    public Response $response;
+
+    public static Application $app;
+
     public function __construct(){
 
+        self::$app = $this;
         $this->request = new Request();
-        $this->router = new Router($this->request);
+        $this->router = new Router();
+        $this->response = new Response();
 
     }
 
